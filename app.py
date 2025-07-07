@@ -38,6 +38,7 @@ class Character(Base):
     color = Column(String, nullable=True)
     size = Column(String, nullable=True)
     script = Column(Text, nullable=True)
+    avatar_path = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -132,12 +133,14 @@ def store_character():
             stored_ids = []
             for character in data:
                 character_id = str(uuid.uuid4())
+                avatar_path = character.get("avatar_path", "")
                 db_character = Character(
                     id=character_id,
                     name=character.get("name"),
                     color=str(character.get("color")),
                     size=str(character.get("size")),
-                    script=character.get("script")
+                    script=character.get("script"),
+                    avatar_path=avatar_path
                 )
                 session.add(db_character)
                 stored_ids.append(character_id)
@@ -145,12 +148,14 @@ def store_character():
             return jsonify({"message": "Characters stored", "character_ids": stored_ids})
         else:
             character_id = str(uuid.uuid4())
+            avatar_path = data.get("avatar_path", "")
             db_character = Character(
                 id=character_id,
                 name=data.get("name"),
                 color=str(data.get("color")),
                 size=str(data.get("size")),
-                script=data.get("script")
+                script=data.get("script"),
+                avatar_path=avatar_path
             )
             session.add(db_character)
             session.commit()
@@ -167,31 +172,49 @@ def generate_from_stored():
     data = request.json
     character_ids = data.get("character_ids")
     use_ai = data.get("use_ai", True)
-    if not character_ids or not isinstance(character_ids, list):
-        return jsonify({"error": "character_ids must be a list of IDs"}), 400
 
     session = SessionLocal()
     try:
         characters = []
-        for cid in character_ids:
-            char = session.query(Character).filter(Character.id == cid).first()
-            if not char:
-                return jsonify({"error": f"Character ID {cid} not found"}), 404
-            # Parse color and size back to original types
-            try:
-                color = ast.literal_eval(char.color) if char.color else None
-            except Exception:
-                color = None
-            try:
-                size = ast.literal_eval(char.size) if char.size else None
-            except Exception:
-                size = None
-            characters.append({
-                "name": char.name,
-                "color": color,
-                "size": size,
-                "script": char.script
-            })
+        if not character_ids:
+            # Fetch all characters if no character_ids provided
+            all_chars = session.query(Character).all()
+            for char in all_chars:
+                try:
+                    color = ast.literal_eval(char.color) if char.color else None
+                except Exception:
+                    color = None
+                try:
+                    size = ast.literal_eval(char.size) if char.size else None
+                except Exception:
+                    size = None
+                characters.append({
+                    "name": char.name,
+                    "color": color,
+                    "size": size,
+                    "script": char.script
+                })
+        else:
+            if not isinstance(character_ids, list):
+                return jsonify({"error": "character_ids must be a list of IDs"}), 400
+            for cid in character_ids:
+                char = session.query(Character).filter(Character.id == cid).first()
+                if not char:
+                    return jsonify({"error": f"Character ID {cid} not found"}), 404
+                try:
+                    color = ast.literal_eval(char.color) if char.color else None
+                except Exception:
+                    color = None
+                try:
+                    size = ast.literal_eval(char.size) if char.size else None
+                except Exception:
+                    size = None
+                characters.append({
+                    "name": char.name,
+                    "color": color,
+                    "size": size,
+                    "script": char.script
+                })
         import uuid
         import os
         video_id = str(uuid.uuid4())

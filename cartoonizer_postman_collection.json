@@ -7,7 +7,7 @@
   },
   "item": [
     {
-      "name": "Store Characters",
+      "name": "Store Character(s)",
       "request": {
         "method": "POST",
         "header": [
@@ -18,7 +18,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "[\n  {\n    \"name\": \"Character1\",\n    \"color\": \"[255,0,0]\",\n    \"size\": \"40\",\n    \"script\": \"Hello from Character1\"\n  },\n  {\n    \"name\": \"Character2\",\n    \"color\": \"[0,255,0]\",\n    \"size\": \"50\",\n    \"script\": \"Hello from Character2\"\n  }\n]"
+          "raw": "{\n  \"name\": \"Character1\",\n  \"color\": \"#FF0000\",\n  \"size\": \"50\",\n  \"script\": \"Hello, I am Character1.\",\n  \"avatar_path\": \"path/to/avatar1.png\"\n}"
         },
         "url": {
           "raw": "http://localhost:5000/api/cartoon/store_character",
@@ -37,7 +37,37 @@
       "response": []
     },
     {
-      "name": "List Stored Characters",
+      "name": "Generate Video From Stored Characters",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"character_ids\": [],\n  \"use_ai\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/generate_from_stored",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "generate_from_stored"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Characters",
       "request": {
         "method": "GET",
         "header": [],
@@ -58,7 +88,7 @@
       "response": []
     },
     {
-      "name": "Generate Video from Stored Characters",
+      "name": "Generate Video From Script",
       "request": {
         "method": "POST",
         "header": [
@@ -69,67 +99,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"character_ids\": [\"<character_id_1>\", \"<character_id_2>\"],\n  \"use_ai\": true\n}"
-        },
-        "url": {
-          "raw": "http://localhost:5000/api/cartoon/generate_from_stored",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "5000",
-          "path": [
-            "api",
-            "cartoon",
-            "generate_from_stored"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create Dynamic Character Video",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"DynamicChar\",\n  \"color\": [0, 0, 255],\n  \"size\": 45,\n  \"script\": \"Hello from dynamic character\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:5000/api/cartoon/dynamic_character",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "5000",
-          "path": [
-            "api",
-            "cartoon",
-            "dynamic_character"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Generate Cartoon Script Video",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"script\": \"Your cartoon script here\",\n  \"service\": \"default\"\n}"
+          "raw": "{\n  \"script\": \"Your script here\",\n  \"service\": \"default\"\n}"
         },
         "url": {
           "raw": "http://localhost:5000/api/cartoon/script",
@@ -148,7 +118,7 @@
       "response": []
     },
     {
-      "name": "Generate Cartoon Video from URL",
+      "name": "Generate Video From URL",
       "request": {
         "method": "POST",
         "header": [
@@ -178,7 +148,7 @@
       "response": []
     },
     {
-      "name": "Live Cartoon Stream",
+      "name": "Live Stream",
       "request": {
         "method": "GET",
         "header": [],
@@ -199,7 +169,7 @@
       "response": []
     },
     {
-      "name": "Generate Cartoon Video from Characters",
+      "name": "Cartoon Characters",
       "request": {
         "method": "POST",
         "header": [
@@ -210,7 +180,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"characters\": [\n    {\n      \"name\": \"Character1\",\n      \"color\": [255, 0, 0],\n      \"size\": 40,\n      \"script\": \"Hello from Character1\"\n    },\n    {\n      \"name\": \"Character2\",\n      \"color\": [0, 255, 0],\n      \"size\": 50,\n      \"script\": \"Hello from Character2\"\n    }\n  ],\n  \"use_ai\": true\n}"
+          "raw": "{\n  \"characters\": [\n    {\n      \"name\": \"Character1\",\n      \"color\": \"#FF0000\",\n      \"size\": \"50\",\n      \"script\": \"Hello from Character1\",\n      \"avatar_path\": \"path/to/avatar1.png\"\n    },\n    {\n      \"name\": \"Character2\",\n      \"color\": \"#00FF00\",\n      \"size\": \"45\",\n      \"script\": \"Hello from Character2\",\n      \"avatar_path\": \"path/to/avatar2.png\"\n    }\n  ],\n  \"use_ai\": false\n}"
         },
         "url": {
           "raw": "http://localhost:5000/api/cartoon/characters",
@@ -223,6 +193,36 @@
             "api",
             "cartoon",
             "characters"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Dynamic Character",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Character1\",\n  \"color\": \"#FF0000\",\n  \"size\": \"50\",\n  \"script\": \"Hello from Character1\",\n  \"avatar_path\": \"path/to/avatar1.png\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/dynamic_character",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "dynamic_character"
           ]
         }
       },

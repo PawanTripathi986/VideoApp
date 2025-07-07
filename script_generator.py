@@ -59,6 +59,7 @@ import ast
 
 def generate_individual_character_video(character, video_id):
     import cv2
+    import logging
     output_dir = os.path.join("output")
     os.makedirs(output_dir, exist_ok=True)
     avi_path = os.path.join(output_dir, f"{video_id}.avi")
@@ -66,7 +67,26 @@ def generate_individual_character_video(character, video_id):
     audio_path = os.path.join(output_dir, f"{video_id}.mp3")
     final_output_path = os.path.join(output_dir, f"{video_id}_final.mp4")
 
-    width, height, fps, duration = 640, 480, 10, 5
+    width, height, fps = 640, 480, 10
+
+    # Generate speech audio from character script
+    script_text = character.get("script", "")
+    generate_audio_from_script(script_text, audio_path)
+
+    # Get audio duration using ffprobe
+    def get_audio_duration(path):
+        import subprocess
+        result = subprocess.run(
+            ['ffprobe', '-v', 'error', '-show_entries',
+             'format=duration', '-of',
+             'default=noprint_wrappers=1:nokey=1', path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+        return float(result.stdout)
+
+    audio_duration = get_audio_duration(audio_path)
+    total_frames = int(fps * audio_duration)
+
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter(avi_path, fourcc, fps, (width, height))
 
@@ -79,34 +99,41 @@ def generate_individual_character_video(character, video_id):
 
     # Load avatar image
     avatar_path = character.get("avatar_path")
-    if avatar_path and os.path.exists(avatar_path):
-        avatar_img = cv2.imread(avatar_path, cv2.IMREAD_UNCHANGED)
-        if avatar_img is None:
-            avatar_img = None
-    else:
-        avatar_img = None
 
     # Initialize character state
+        if not os.path.isabs(avatar_path):
+            avatar_path = os.path.abspath(avatar_path)
+        if os.path.exists(avatar_path):
+            avatar_img = cv2.imread(avatar_path, cv2.IMREAD_UNCHANGED)
+            if avatar_img is None:
+                logging.warning(f"Failed to load avatar image at {avatar_path}")
+                avatar_img = None
+            else:
+                logging.info(f"Successfully loaded avatar image at {avatar_path}")
+        else:
+            logging.warning(f"Avatar image path does not exist: {avatar_path}")
+            avatar_img = None
+    else:
+        logging.info("No avatar_path provided for character")
+        avatar_img = None
     state = {
         "name": character.get("name", "char"),
         "pos_x": 0,
         "pos_y": height // 2,
-        "speed": width // (fps * duration),
+        "speed": width / total_frames if total_frames > 0 else width // (fps * 5),
         "radius": radius,
-        "script": character.get("script", "")
+        "script": script_text
     }
 
-    for frame_num in range(fps * duration):
+    for frame_num in range(total_frames):
         # Create a colorful gradient background
         img = np.zeros((height, width, 3), dtype=np.uint8)
         for y in range(height):
             color = (int(255 * y / height), int(128 * y / height), int(255 * (height - y) / height))
             img[y, :] = color
 
-        # Calculate character position
-        center_x = state["pos_x"] + state["speed"] * frame_num
-        if center_x > width + state["radius"]:
-            center_x = center_x % (width + state["radius"])
+        # Calculate character position with looping movement
+        center_x = int((state["pos_x"] + state["speed"] * frame_num) % (width + state["radius"]))
         center_y = state["pos_y"]
 
         if avatar_img is not None:
@@ -115,8 +142,8 @@ def generate_individual_character_video(character, video_id):
             avatar_resized = cv2.resize(avatar_img, (0, 0), fx=scale, fy=scale)
 
             # Calculate top-left corner for avatar placement
-            top_left_x = int(center_x - avatar_resized.shape[1] // 2)
-            top_left_y = int(center_y - avatar_resized.shape[0] // 2)
+            top_left_x = center_x - avatar_resized.shape[1] // 2
+            top_left_y = center_y - avatar_resized.shape[0] // 2
 
             # Overlay avatar on background with alpha channel if present
             y1, y2 = max(0, top_left_y), min(height, top_left_y + avatar_resized.shape[0])
@@ -154,7 +181,6 @@ def generate_individual_character_video(character, video_id):
         out.write(cartoon)
     out.release()
 
-    generate_audio_from_script(state["script"], audio_path)
     convert_avi_to_mp4(avi_path, mp4_path)
     merge_audio_video(mp4_path, audio_path, final_output_path)
 
@@ -343,8 +369,6 @@ def generate_video_from_characters_normal(characters, use_ai=False, video_id=Non
     :param video_id: Video ID for output file naming
     :return: Path to generated video file
     """
-    # Implementation of normal cartoon video generation here
-    # For example, generate individual character videos and merge them
     import uuid
     output_dir = "output"
     os.makedirs(output_dir, exist_ok=True)
@@ -354,5 +378,66 @@ def generate_video_from_characters_normal(characters, use_ai=False, video_id=Non
         vid_path = generate_individual_character_video(char, unique_vid_id)
         video_paths.append(vid_path)
     merged_video_path = os.path.join(output_dir, f"{video_id}_merged.mp4")
-    merge_character_videos(video_paths, merged_video_path)
-    return merged_video_path
+    # Use new function to create tiled video layout
+    tiled_video_path = os.path.join(output_dir, f"{video_id}_tiled.mp4")
+    create_tiled_video(video_paths, tiled_video_path)
+    return tiled_video_path
+
+def create_tiled_video(input_videos, output_path):
+    """
+    Create a tiled layout video from multiple input videos using ffmpeg.
+
+    :param input_videos: List of input video file paths
+    :param output_path: Output video file path
+    """
+    import math
+    import subprocess
+    import logging
+
+    num_videos = len(input_videos)
+    if num_videos == 0:
+        raise ValueError("No input videos provided for tiling")
+
+    # Calculate grid size (rows and cols)
+    cols = math.ceil(math.sqrt(num_videos))
+    rows = math.ceil(num_videos / cols)
+
+    # Prepare ffmpeg input arguments
+    input_args = []
+    for video in input_videos:
+        input_args.extend(['-i', video])
+
+    # Build filter_complex for tile layout
+    filter_complex_parts = []
+    for i in range(num_videos):
+        filter_complex_parts.append(f"[{i}:v] setpts=PTS-STARTPTS, scale=320x240 [v{i}];")
+    filter_complex_parts.append(f"{''.join([f'[v{i}]' for i in range(num_videos)])} xstack=inputs={num_videos}:layout=")
+
+    layout = ""
+    for i in range(num_videos):
+        x = (i % cols) * 320
+        y = (i // cols) * 240
+        layout += f"{x}_{y}|"
+    layout = layout.rstrip('|')
+
+    filter_complex_parts[-1] += layout + " [v]"
+
+    filter_complex = "".join(filter_complex_parts)
+
+    command = [
+        'ffmpeg', '-y',
+        *input_args,
+        '-filter_complex', filter_complex,
+        '-map', '[v]',
+        '-c:v', 'libx264',
+        '-crf', '23',
+        '-preset', 'veryfast',
+        output_path
+    ]
+
+    try:
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
+        logging.info(f"FFmpeg tiled video succeeded: {result.stdout}")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"FFmpeg tiled video failed with error: {e.stderr}")
+        raise e
