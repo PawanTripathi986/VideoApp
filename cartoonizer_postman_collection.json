@@ -1,0 +1,232 @@
+{
+  "info": {
+    "name": "Cartoonizer API",
+    "_postman_id": "12345678-abcd-efgh-ijkl-1234567890ab",
+    "description": "Postman collection for Cartoonizer API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Store Characters",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"name\": \"Character1\",\n    \"color\": \"[255,0,0]\",\n    \"size\": \"40\",\n    \"script\": \"Hello from Character1\"\n  },\n  {\n    \"name\": \"Character2\",\n    \"color\": \"[0,255,0]\",\n    \"size\": \"50\",\n    \"script\": \"Hello from Character2\"\n  }\n]"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/store_character",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "store_character"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Stored Characters",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/list_characters",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "list_characters"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Video from Stored Characters",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"character_ids\": [\"<character_id_1>\", \"<character_id_2>\"],\n  \"use_ai\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/generate_from_stored",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "generate_from_stored"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Dynamic Character Video",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"DynamicChar\",\n  \"color\": [0, 0, 255],\n  \"size\": 45,\n  \"script\": \"Hello from dynamic character\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/dynamic_character",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "dynamic_character"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Cartoon Script Video",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"script\": \"Your cartoon script here\",\n  \"service\": \"default\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/script",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "script"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Cartoon Video from URL",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"video_url\": \"http://example.com/video.mp4\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/url",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "url"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Live Cartoon Stream",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/live",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "live"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Cartoon Video from Characters",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"characters\": [\n    {\n      \"name\": \"Character1\",\n      \"color\": [255, 0, 0],\n      \"size\": 40,\n      \"script\": \"Hello from Character1\"\n    },\n    {\n      \"name\": \"Character2\",\n      \"color\": [0, 255, 0],\n      \"size\": 50,\n      \"script\": \"Hello from Character2\"\n    }\n  ],\n  \"use_ai\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/cartoon/characters",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "cartoon",
+            "characters"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
